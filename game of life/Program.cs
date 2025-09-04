@@ -17,7 +17,7 @@
 
         if (choice == 0)
         {
-            Console.WriteLine("Goodbye");
+            Console.WriteLine("Goodbye !");
         }
         else
         {
@@ -29,15 +29,15 @@
             {
                 Structures.ChooseStructure();
             }
-            Console.Clear();
+
             while (true)
             {
                 printmap();
-                System.Threading.Thread.Sleep(80);
+                System.Threading.Thread.Sleep(50);
+
                 checkneighbor();
                 Console.SetCursorPosition(0, 0);
             }
-
         }
     }
 
@@ -46,8 +46,10 @@
         for (int i = 0; i < AverageCells; i++)
         {
             Random rand = new Random();
+
             int x = rand.Next(10, L - 10);
             int y = rand.Next(10, l - 10);
+
             map[x, y] = 2;
         }
 
@@ -81,10 +83,14 @@
         {
             for (int j = 0; j < l; j++)
             {
-                if (map[i, j] == 2) sb.Append(GREEN + "██" + RESET);
-                else if (map[i, j] == 1) sb.Append(YELLOW + "██" + RESET);
-                else if (map[i, j] == -1) sb.Append(WHITE + "██" + RESET);
-                else sb.Append("  ");
+                if (map[i, j] == 2) 
+                    sb.Append(GREEN + "██" + RESET);
+                else if (map[i, j] == 1) 
+                    sb.Append(YELLOW + "██" + RESET);
+                else if (map[i, j] == -1) 
+                    sb.Append(WHITE + "██" + RESET);
+                else 
+                    sb.Append("  ");
             }
             sb.AppendLine();
         }
@@ -235,19 +241,22 @@ public static class Structures
 
     public static (int, int) ChooseCoordinates()
     {
+        Console.WriteLine("Where do you want to set the curser ?");
+
         int x, y;
-        Console.WriteLine("Where do you wanna set the curser ?");
         do
         {
             Console.Write("x : ");
             x = Convert.ToInt32(Console.ReadLine());
         } while (x < 1 || x > Program.l - 1);
-        Console.Write("y : ");
+
         do
         {
+            Console.Write("y : ");
             y = Convert.ToInt32(Console.ReadLine());
-            return (x, y);
         } while (y < 1 || y > Program.L - 1);
+
+        return (x, y);
     }
 
     private static void PlaceStructure(int[,] structure, int x, int y)
@@ -267,22 +276,15 @@ public static class Structures
         int choice;
         do
         {
-            Console.Write("What structure do you wanna place ?\n1. Glider\n2. Osci 3 steps\n3. Draw\n0. Leave\nChoice : ");
+            Console.Write("Which structure do you want to place ?\n1. Glider\n2. Osci 3 steps\n3. Draw\n0. Start the game\nChoice : ");
             choice = Convert.ToInt32(Console.ReadLine());
 
             switch (choice)
             {
-                case 1:
-                    SpawnGlider();
-                    break;
-                case 2:
-                    SpawnOsci3steps();
-                    break;
-                case 3:
-                    Draw();
-                    break;
-                case 0:
-                    break;
+                case 1: SpawnGlider(); break;
+                case 2: SpawnOsci3steps(); break;
+                case 3: Draw(); break;
+                case 0: Console.WriteLine("Game starting..."); break;
             }
         } while (choice != 0);
     }
@@ -297,8 +299,13 @@ public static class Structures
     public static void SpawnGlider()
     {
         var (x, y) = ChooseCoordinates();
-        Console.Write("Choose direction :\n1.Up Left\n2. Up Right\n3. Down Left\n4. Down Right\nChoice : ");
-        int choice = Convert.ToInt32(Console.ReadLine());
+
+        int choice;
+        do
+        {
+            Console.Write("Choose a direction :\n1.Up Left\n2. Up Right\n3. Down Left\n4. Down Right\nChoice : ");
+            choice = Convert.ToInt32(Console.ReadLine());
+        } while (choice < 1 || choice > 4);
 
         switch (choice)
         {
@@ -314,30 +321,34 @@ public static class Structures
         int choice;
         do
         {
-            Console.Write("1.Place pixels\n2. Draw rectangles/squares/lines\n0. Leave\nChoice : ");
+            Console.Write("1.Place pixels\n2. Draw rectangles/squares/lines\n0. Go back\nChoice : ");
             choice = Convert.ToInt16(Console.ReadLine());
 
             switch (choice)
             {
                 case 1:
                     var (x, y) = ChooseCoordinates();
+
                     int state;
                     do
                     {
-                        Console.Write("What state (-1 = Wall | 0 = Dead | 1 = Semi-Alive | 2 = Alive) ? : ");
+                        Console.Write("Which state (-1 = Wall | 0 = Dead | 1 = Semi-Alive | 2 = Alive) ? : ");
                         state = Convert.ToInt16(Console.ReadLine());
                     } while (state < -1 || state > 2);
+
                     Program.map[x, y] = state;
                     break;
+
                 case 2:
                     Console.Write("Choose the fisrt position. ");
                     var (x1, y1) = ChooseCoordinates();
                     Console.Write("Choose the second position. ");
                     var (x2, y2) = ChooseCoordinates();
+
                     int state2;
                     do
                     {
-                        Console.Write("What state (-1 = Wall | 0 = Dead | 1 = Semi-Alive | 2 = Alive) ? : ");
+                        Console.Write("Which state (-1 = Wall | 0 = Dead | 1 = Semi-Alive | 2 = Alive) ? : ");
                         state2 = Convert.ToInt16(Console.ReadLine());
                     } while (state2 < -1 || state2 > 2);
 
@@ -355,10 +366,9 @@ public static class Structures
                         j = Math.Min(y1, y2);
                     }
                     break;
-                case 0:
-                    break;
+
+                case 0: Console.WriteLine("Going back..."); break;
             }
         } while (choice != 0);
-
     }
 }
