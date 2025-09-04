@@ -6,25 +6,48 @@
     public static int[,] map = new int[L, l];
     private static void Main(string[] args)
     {
+        int choice;
         Initializemap();
-        placecells();
-
-        while (true)
+        do
         {
-            printmap();
-            System.Threading.Thread.Sleep(80);
-            checkneighbor();
-            Console.SetCursorPosition(0, 0);
+            Console.Write("1. Random\n2. Place cells and/or structures\n0. Exit\nChoice : ");
+            choice = Convert.ToInt16(Console.ReadLine());
+
+        } while (choice < 0 || choice > 2);
+
+        if (choice == 0)
+        {
+            Console.WriteLine("Goodbye");
+        }
+        else
+        {
+            if (choice == 1)
+            {
+                placecells();
+            }
+            else if (choice == 2)
+            {
+                Structures.ChooseStructure();
+            }
+            Console.Clear();
+            while (true)
+            {
+                printmap();
+                System.Threading.Thread.Sleep(80);
+                checkneighbor();
+                Console.SetCursorPosition(0, 0);
+            }
+
         }
     }
 
     static void placecells()
     {
-        for(int i = 0; i < AverageCells; i++)
+        for (int i = 0; i < AverageCells; i++)
         {
             Random rand = new Random();
-            int x = rand.Next(10, L-10);
-            int y = rand.Next(10, l-10);
+            int x = rand.Next(10, L - 10);
+            int y = rand.Next(10, l - 10);
             map[x, y] = 2;
         }
 
@@ -36,13 +59,14 @@
         {
             for (int j = 0; j < l; j++)
             {
-                if(i==0 ||  j==0 || i == L -1 || j == l-1)
+                if (i == 0 || j == 0 || i == L - 1 || j == l - 1)
                     map[i, j] = -1;
                 else
                     map[i, j] = 0;
             }
         }
     }
+
     // --- Colors ---
     const string GREEN = "\u001b[32m";
     const string YELLOW = "\u001b[33m";
@@ -81,12 +105,12 @@
                 int semiAliveCells = 0;
 
                 // count neighbors
-                for (int di = -1; di <= 1; di++)
+                for (int x = -1; x <= 1; x++)
                 {
-                    for (int dj = -1; dj <= 1; dj++)
+                    for (int y = -1; y <= 1; y++)
                     {
-                        if (di == 0 && dj == 0) continue;// skip itself
-                        int val = lastmap[i + di, j + dj];
+                        if (x == 0 && y == 0) continue;// skip itself
+                        int val = lastmap[i + x, j + y];
                         if (val == 2) alivecells++;
                         else if (val == 1) semiAliveCells++;
                     }
@@ -102,7 +126,7 @@
                 else if (lastmap[i, j] == 1) // semi
                 {
                     if (alivecells == 3)
-                        map[i, j] = 2; 
+                        map[i, j] = 2;
                     else if (semiAliveCells >= 5 && alivecells < 3)
                         map[i, j] = 1;
                     else
@@ -120,7 +144,7 @@
     }
 
 
-    /* Jeu normal
+    /* Basic game
     static void checkneighbor()
     {
         int[,] lastmap = new int[L, l];
@@ -160,3 +184,125 @@
     }*/
 }
 
+public static class Structures
+{
+    // --- Structures ---
+    static int[,] gliderUpLeftMap =
+    {
+        { 0, 0, 1, 0 },
+        { 1, 2, 2, 0 },
+        { 2, 2, 0, 1 },
+        { 0, 1, 2, 0 }
+    };
+    static int[,] gliderUpRightMap =
+    {
+        { 0, 1, 0, 0 },
+        { 0, 2, 2, 1 },
+        { 1, 0, 2, 2 },
+        { 0, 2, 1, 0 }
+    };
+    static int[,] gliderDownLeftMap =
+    {
+        { 0, 1, 2, 0 },
+        { 2, 2, 0, 1 },
+        { 1, 2, 2, 0 },
+        { 0, 0, 1, 0 }
+    };
+    static int[,] gliderDownRightMap =
+    {
+        { 0, 2, 1, 0 },
+        { 1, 0, 2, 2 },
+        { 0, 2, 2, 1 },
+        { 0, 1, 0, 0 }
+    };
+
+    static int[,] Osci3StepsMap =
+    {
+        {0,0,2,2,2,0,0,0,2,2,2,0,0 },
+        {0,1,0,1,1,1,1,1,1,1,0,1,0 },
+        {2,0,0,1,0,2,0,2,0,1,0,0,2 },
+        {2,1,1,0,1,2,0,2,1,0,1,1,2 },
+        {2,1,0,1,0,2,0,2,0,1,0,1,2 },
+        {0,1,2,2,2,1,0,1,2,2,2,1,0 },
+        {0,1,0,0,0,1,0,1,0,0,0,1,0 },
+        {0,1,2,2,2,1,0,1,2,2,2,1,0 },
+        {2,1,0,1,0,2,0,2,0,1,0,1,2 },
+        {2,1,1,0,1,2,0,2,1,0,1,1,2 },
+        {2,0,0,1,0,2,0,2,0,1,0,0,2 },
+        {0,1,0,1,1,1,1,1,1,1,0,1,0 },
+        {0,0,2,2,2,0,0,0,2,2,2,0,0 },
+    };
+
+    public static (int, int) ChooseCoordinates()
+    {
+        int x, y;
+        Console.WriteLine("Where do you wanna set the curser ?");
+        do
+        {
+            Console.Write("x : ");
+            x = Convert.ToInt32(Console.ReadLine());
+        } while (x < 1 || x > Program.l - 1);
+        Console.Write("y : ");
+        do
+        {
+            y = Convert.ToInt32(Console.ReadLine());
+            return (x, y);
+        } while (y < 1 || y > Program.L - 1);
+    }
+
+    private static void PlaceStructure(int[,] structure, int x, int y)
+    {
+        for (int i = 0; i < structure.GetLength(0); i++)
+        {
+            for (int j = 0; j < structure.GetLength(1); j++)
+            {
+                Program.map[x + i, y + j] = structure[i, j];
+            }
+        }
+    }
+
+    // --- Menu ---
+    public static void ChooseStructure()
+    {
+        int choice;
+        do
+        {
+            Console.Write("What structure do you wanna place ?\n1. Glider\n2. Osci 3 steps\n0. Leave\nChoice : ");
+            choice = Convert.ToInt32(Console.ReadLine());
+
+            switch (choice)
+            {
+                case 1:
+                    SpawnGlider();
+                    break;
+                case 2:
+                    SpawnOsci3steps();
+                    break;
+                case 0:
+                    break;
+            }
+        } while (choice != 0);
+    }
+
+    // --- Spawns ---
+    public static void SpawnOsci3steps()
+    {
+        var (x, y) = ChooseCoordinates();
+        PlaceStructure(Osci3StepsMap, x, y);
+    }
+
+    public static void SpawnGlider()
+    {
+        var (x, y) = ChooseCoordinates();
+        Console.Write("Choose direction :\n1.Up Left\n2. Up Right\n3. Down Left\n4. Down Right\nChoice : ");
+        int choice = Convert.ToInt32(Console.ReadLine());
+
+        switch (choice)
+        {
+            case 1: PlaceStructure(gliderUpLeftMap, x, y); break;
+            case 2: PlaceStructure(gliderUpRightMap, x, y); break;
+            case 3: PlaceStructure(gliderDownLeftMap, x, y); break;
+            case 4: PlaceStructure(gliderDownRightMap, x, y); break;
+        }
+    }
+}
