@@ -43,6 +43,11 @@
             }
         }
     }
+    // --- Colors ---
+    const string GREEN = "\u001b[32m";
+    const string YELLOW = "\u001b[33m";
+    const string WHITE = "\u001b[37m";
+    const string RESET = "\u001b[0m";
 
     static void printmap()
     {
@@ -52,9 +57,9 @@
         {
             for (int j = 0; j < l; j++)
             {
-                if (map[i, j] == 2) sb.Append("██");
-                else if (map[i, j] == 1) sb.Append("▒▒");
-                else if (map[i, j] == -1) sb.Append("██");
+                if (map[i, j] == 2) sb.Append(GREEN + "██" + RESET);
+                else if (map[i, j] == 1) sb.Append(YELLOW + "██" + RESET);
+                else if (map[i, j] == -1) sb.Append(WHITE + "██" + RESET);
                 else sb.Append("  ");
             }
             sb.AppendLine();
