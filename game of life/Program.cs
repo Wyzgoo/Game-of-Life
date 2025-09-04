@@ -75,14 +75,17 @@
                 int alivecells = 0;
                 int semiAliveCells = 0;
 
-                if (lastmap[i - 1, j - 1] == 2) alivecells++; else if (lastmap[i - 1, j - 1] == 1) semiAliveCells++; 
-                if (lastmap[i - 1, j] == 2) alivecells++; else if (lastmap[i - 1, j] == 1) semiAliveCells++; 
-                if (lastmap[i - 1, j + 1] == 2) alivecells++; else if (lastmap[i - 1, j + 1] == 1) semiAliveCells++; 
-                if (lastmap[i, j - 1] == 2) alivecells++; else if (lastmap[i, j - 1] == 1) semiAliveCells++; 
-                if (lastmap[i, j + 1] == 2) alivecells++; else if (lastmap[i, j + 1] == 1) semiAliveCells++; 
-                if (lastmap[i + 1, j - 1] == 2) alivecells++; else if (lastmap[i + 1, j - 1] == 1) semiAliveCells++; 
-                if (lastmap[i + 1, j] == 2) alivecells++; else if (lastmap[i + 1, j] == 1) semiAliveCells++; 
-                if (lastmap[i + 1, j + 1] == 2) alivecells++; else if (lastmap[i + 1, j + 1] == 1) semiAliveCells++;
+                // count neighbors
+                for (int di = -1; di <= 1; di++)
+                {
+                    for (int dj = -1; dj <= 1; dj++)
+                    {
+                        if (di == 0 && dj == 0) continue;// skip itself
+                        int val = lastmap[i + di, j + dj];
+                        if (val == 2) alivecells++;
+                        else if (val == 1) semiAliveCells++;
+                    }
+                }
 
                 if (lastmap[i, j] == 2) // alive
                 {
