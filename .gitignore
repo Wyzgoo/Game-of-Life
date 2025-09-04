@@ -1,0 +1,9 @@
+# Fichiers Visual Studio
+.vs/
+*.vsidx
+*.suo
+*.user
+*.cache
+*.db
+bin/
+obj/
