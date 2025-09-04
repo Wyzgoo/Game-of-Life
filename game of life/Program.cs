@@ -267,7 +267,7 @@ public static class Structures
         int choice;
         do
         {
-            Console.Write("What structure do you wanna place ?\n1. Glider\n2. Osci 3 steps\n0. Leave\nChoice : ");
+            Console.Write("What structure do you wanna place ?\n1. Glider\n2. Osci 3 steps\n3. Draw\n0. Leave\nChoice : ");
             choice = Convert.ToInt32(Console.ReadLine());
 
             switch (choice)
@@ -277,6 +277,9 @@ public static class Structures
                     break;
                 case 2:
                     SpawnOsci3steps();
+                    break;
+                case 3:
+                    Draw();
                     break;
                 case 0:
                     break;
@@ -304,5 +307,58 @@ public static class Structures
             case 3: PlaceStructure(gliderDownLeftMap, x, y); break;
             case 4: PlaceStructure(gliderDownRightMap, x, y); break;
         }
+    }
+
+    static public void Draw()
+    {
+        int choice;
+        do
+        {
+            Console.Write("1.Place pixels\n2. Draw rectangles/squares/lines\n0. Leave\nChoice : ");
+            choice = Convert.ToInt16(Console.ReadLine());
+
+            switch (choice)
+            {
+                case 1:
+                    var (x, y) = ChooseCoordinates();
+                    int state;
+                    do
+                    {
+                        Console.Write("What state (-1 = Wall | 0 = Dead | 1 = Semi-Alive | 2 = Alive) ? : ");
+                        state = Convert.ToInt16(Console.ReadLine());
+                    } while (state < -1 || state > 2);
+                    Program.map[x, y] = state;
+                    break;
+                case 2:
+                    Console.Write("Choose the fisrt position. ");
+                    var (x1, y1) = ChooseCoordinates();
+                    Console.Write("Choose the second position. ");
+                    var (x2, y2) = ChooseCoordinates();
+                    int state2;
+                    do
+                    {
+                        Console.Write("What state (-1 = Wall | 0 = Dead | 1 = Semi-Alive | 2 = Alive) ? : ");
+                        state2 = Convert.ToInt16(Console.ReadLine());
+                    } while (state2 < -1 || state2 > 2);
+
+                    int i = Math.Min(x1, x2);
+                    int j = Math.Min(y1, y2);
+                    int endi = Math.Max(x1, x2);
+                    int endj = Math.Max(y1, y2);
+
+                    for (; i <= endi; i++)
+                    {
+                        for (; j <= endj; j++)
+                        {
+                            Program.map[i, j] = state2;
+                        }
+                        j = Math.Min(y1, y2);
+                    }
+                    break;
+                case 0:
+                    break;
+            }
+        } while (choice != 0);
+
     }
 }
