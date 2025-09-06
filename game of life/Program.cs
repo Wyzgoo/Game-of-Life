@@ -5,8 +5,9 @@ internal class Program
     // --- Environment variables ---
     public const int l = 300;
     public const int L = 150;
-    public static int AverageCells = 5000;
-    public static int SleepTime = 80;
+    public static int stateStarterCells = 2; // change the state of the starting cells here (1, 2 or 3)
+    public static int numberStartCells = l*L/(1+stateStarterCells*2); // number of starting cells, depending on the state (the higher the state, the less cells)
+    public static int SleepTime = 80; // time (in ms) between each generation
     public static int[,] map = new int[L, l];
 
     private static void Main(string[] args)
@@ -48,14 +49,14 @@ internal class Program
 
     static void placecells()
     {
-        for (int i = 0; i < AverageCells; i++)
+        for (int i = 0; i < numberStartCells; i++)
         {
             Random rand = new Random();
 
-            int x = rand.Next(30, L - 30);
-            int y = rand.Next(30, l - 30);
+            int x = rand.Next(20, L - 20);
+            int y = rand.Next(20, l - 20);
 
-            map[x, y] = 3;
+            map[x, y] = stateStarterCells;
         }
 
     }
@@ -157,28 +158,47 @@ internal class Program
                 double score = (thrivingNear + 1.5 * thrivingFar) + (matureNear + 1 * matureFar) +(weakNear + 0.5 * weakFar);
 
                 if (map[i, j] == 3) // Thriving
-                { 
-                    map[i, j] = (score < 10 || score > 22) ? 2 : 3;
+                {
+                    if (score < 10 || score > 24) map[i, j] = 2;   // under/over population → downgrade
+                    else map[i, j] = 3;                            // very stable Thriving zone
                 }
                 else if (map[i, j] == 2) // Mature
-                { 
-                    if (score < 8 || score > 24) map[i, j] = 1;
-                    else if (score>=23) map[i, j] = 3;
-                    else if (score >= 18 && score <= 22) map[i, j] = 3;
-                    else if (thrivingNear >= 7 || matureNear >= 6 || thrivingFar >= 6 || matureFar >= 5) map[i, j] = 3;
-                    else map[i, j] = 2;
+                {
+                    if (score < 8 || score > 26) map[i, j] = 1;    // extreme cases → weaken
+                    else if (score >= 18 && score <= 23)
+                    {
+                        // allow upgrade to Thriving ONLY if not overcrowded
+                        if ((thrivingNear < 5 && matureNear < 6) || matureNear==8) map[i, j] = 3;
+                        else map[i, j] = 2; // stay stable in dense areas
+                    }
+                    else map[i, j] = 2; // default stability
                 }
                 else if (map[i, j] == 1) // Weak
                 {
-                    if (score < 6) map[i, j] = 0;
-                    else if (score>=17) map[i, j] = 2;
-                    else if (score >= 15 && score <= 21) map[i, j] = 2;
-                    else if (thrivingNear >= 6 || matureNear >= 5 || thrivingFar>=6 || matureFar>=5) map[i, j] = 2;
-                    else map[i, j] = 1;
+                    if (score < 6)
+                    {
+                        map[i, j] = 0; // isolated → Dead
+                    }
+                    else if (score >= 14 && score <= 21 || matureNear>=6 || thrivingNear>=7 || matureFar>=7 || thrivingFar>=8)
+                    {
+                        map[i, j] = 2; // enough support → Mature (even if overcrowded)
+                    }
+
+                    else
+                    {
+                        map[i, j] = 1; // otherwise remain Weak
+                    }
                 }
                 else if (map[i, j] == 0) // Dead
-                { 
-                    map[i, j] = (score >= 8 && score <= 18) ? 1 : 0;
+                {
+                    if (score >= 8 && score <= 22 && thrivingNear < 4)
+                        map[i, j] = 1;  // only grow near edges
+                    else if (score > 22)
+                    {
+                        map[i, j] = 1; // overcrowded but not dead → remains Weak
+                    }
+                    else
+                        map[i, j] = 0;
                 }
 
 
