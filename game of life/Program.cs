@@ -5,9 +5,8 @@ internal class Program
     // --- Environment variables ---
     public const int l = 300;
     public const int L = 150;
-    public static int stateStarterCells = 2; // change the state of the starting cells here (1, 2 or 3)
-    public static int numberStartCells = l*L/(1+stateStarterCells*2); // number of starting cells, depending on the state (the higher the state, the less cells)
-    public static int SleepTime = 80; // time (in ms) between each generation
+    public static int numberStartCells = l * L / 2; // number of starting cells, depending on the side of the grid
+    public static int SleepTime = 50; // time (in ms) between each generation
     public static int[,] map = new int[L, l];
 
     private static void Main(string[] args)
@@ -33,7 +32,7 @@ internal class Program
             }
             else if (choice == 2)
             {
-                Structures.ChooseStructure();
+                Draw.Drawing();
             }
 
             while (true)
@@ -49,16 +48,14 @@ internal class Program
 
     static void placecells()
     {
+        Random rand = new Random();
         for (int i = 0; i < numberStartCells; i++)
         {
-            Random rand = new Random();
-
             int x = rand.Next(20, L - 20);
             int y = rand.Next(20, l - 20);
-
-            map[x, y] = stateStarterCells;
+            int decider = rand.Next(1, 7);
+            map[x, y] = decider;
         }
-
     }
 
     static void Initializemap()
@@ -75,13 +72,6 @@ internal class Program
         }
     }
 
-    // --- Colors ---
-    const string RED = "\u001b[31m";
-    const string GREEN = "\u001b[32m";
-    const string YELLOW = "\u001b[33m";
-    const string WHITE = "\u001b[37m";
-    const string RESET = "\u001b[0m";
-
     static void printmap()
     {
         var sb = new System.Text.StringBuilder();
@@ -90,16 +80,14 @@ internal class Program
         {
             for (int j = 0; j < l; j++)
             {
-                if (map[i, j] == 3)
-                    sb.Append(GREEN + "██" + RESET);
-                else if (map[i, j] == 2) 
-                    sb.Append(YELLOW + "██" + RESET);
-                else if (map[i, j] == 1) 
-                    sb.Append(RED + "██" + RESET);
-                else if (map[i, j] == -1) 
-                    sb.Append(WHITE + "██" + RESET);
-                else 
-                    sb.Append("  ");
+                if (map[i, j] == 3) sb.Append("\u001b[32m██\u001b[0m"); // Green Thriving A
+                else if (map[i, j] == 2) sb.Append("\u001b[33m██\u001b[0m"); // Yellow Mature A
+                else if (map[i, j] == 1) sb.Append("\u001b[31m██\u001b[0m"); // Red Weak A
+                else if (map[i, j] == 4) sb.Append("\u001b[36m██\u001b[0m"); // Cyan Weak B
+                else if (map[i, j] == 5) sb.Append("\u001b[34m██\u001b[0m"); // Blue Mature B
+                else if (map[i, j] == 6) sb.Append("\u001b[35m██\u001b[0m"); // Magenta Thriving B
+                else if (map[i, j] == -1) sb.Append("\u001b[37m██\u001b[0m"); // While Wall
+                else sb.Append("  ");
             }
             sb.AppendLine();
         }
@@ -111,100 +99,165 @@ internal class Program
     {
         int[,] lastmap = new int[L, l];
         Array.Copy(map, lastmap, map.Length);
+        Random rand = new Random();
 
         for (int i = 2; i < L - 2; i++)
         {
             for (int j = 2; j < l - 2; j++)
             {
                 // distance = 1
-                int thrivingNear = 0;
-                int matureNear = 0;
-                int weakNear = 0;
+                int thrivingNearA = 0, matureNearA = 0, weakNearA = 0;
+                int thrivingNearB = 0, matureNearB = 0, weakNearB = 0;
 
                 // distance = 2
-                int thrivingFar = 0;
-                int matureFar = 0;
-                int weakFar = 0;
+                int thrivingFarA = 0, matureFarA = 0, weakFarA = 0;
+                int thrivingFarB = 0, matureFarB = 0, weakFarB = 0;
+
+                // --- enemy pressure counters ---
+                double enemyPressureA = 0;
+                double enemyPressureB = 0;
 
                 for (int dx = -2; dx <= 2; dx++)
                 {
                     for (int dy = -2; dy <= 2; dy++)
                     {
-                        if (dx == 0 && dy == 0) continue; // skip self
+                        if (dx == 0 && dy == 0) continue;
                         if (Math.Abs(dx) == 2 && Math.Abs(dy) == 2) continue; // skip corners
 
                         int state = lastmap[i + dx, j + dy];
-                        int dist;
-                        if (dx == -2 || dx == 2 || dy == 2 || dy == -2)
-                            dist = 2;
-                        else
-                            dist = 1;
+                        int dist = (dx == -2 || dx == 2 || dy == 2 || dy == -2) ? 2 : 1;
 
+                        // --- count allies and enemies ---
                         if (dist == 1)
                         {
-                            if (state == 3) thrivingNear++;
-                            else if (state == 2) matureNear++;
-                            else if (state == 1) weakNear++;
+                            if (state == 6) thrivingNearB++;
+                            else if (state == 5) matureNearB++;
+                            else if (state == 4) weakNearB++;
+                            else if (state == 3) thrivingNearA++;
+                            else if (state == 2) matureNearA++;
+                            else if (state == 1) weakNearA++;
                         }
                         else if (dist == 2)
                         {
-                            if (state == 3) thrivingFar++;
-                            else if (state == 2) matureFar++;
-                            else if (state == 1) weakFar++;
+                            if (state == 6) thrivingFarB++;
+                            else if (state == 5) matureFarB++;
+                            else if (state == 4) weakFarB++;
+                            else if (state == 3) thrivingFarA++;
+                            else if (state == 2) matureFarA++;
+                            else if (state == 1) weakFarA++;
+                        }
+
+                        // --- enemy pressure ---
+                        if (lastmap[i, j] >= 1 && lastmap[i, j] <= 3) // Team A cell
+                        {
+                            if (state == 4) enemyPressureA += 0.2;    // Weak B
+                            else if (state == 5) enemyPressureA += 0.5; // Mature B
+                            else if (state == 6) enemyPressureA += 0.8; // Thriving B
+                        }
+                        else if (lastmap[i, j] >= 4 && lastmap[i, j] <= 6) // Team B cell
+                        {
+                            if (state == 1) enemyPressureB += 0.2;    // Weak A
+                            else if (state == 2) enemyPressureB += 0.5; // Mature A
+                            else if (state == 3) enemyPressureB += 0.8; // Thriving A
                         }
                     }
                 }
 
-                double score = (thrivingNear + 1.5 * thrivingFar) + (matureNear + 1 * matureFar) +(weakNear + 0.5 * weakFar);
+                double scoreA = (thrivingNearA + 1.5 * thrivingFarA) + (matureNearA + 1 * matureFarA) + (weakNearA + 0.5 * weakFarA);
+                double scoreB = (thrivingNearB + 1.5 * thrivingFarB) + (matureNearB + 1 * matureFarB) + (weakNearB + 0.5 * weakFarB);
 
+                // === Team A evolution ===
                 if (map[i, j] == 3) // Thriving
                 {
-                    if (score < 10 || score > 24) map[i, j] = 2;   // under/over population → downgrade
-                    else map[i, j] = 3;                            // very stable Thriving zone
+                    if (scoreA < 10 || scoreA > 24) map[i, j] = 2;
+                    else map[i, j] = 3;
                 }
                 else if (map[i, j] == 2) // Mature
                 {
-                    if (score < 8 || score > 26) map[i, j] = 1;    // extreme cases → weaken
-                    else if (score >= 18 && score <= 23)
+                    if (scoreA < 8 || scoreA > 26) map[i, j] = 1;
+                    else if (scoreA >= 18 && scoreA <= 23)
                     {
-                        // allow upgrade to Thriving ONLY if not overcrowded
-                        if ((thrivingNear < 5 && matureNear < 6) || matureNear==8) map[i, j] = 3;
-                        else map[i, j] = 2; // stay stable in dense areas
+                        if ((thrivingNearA < 5 && matureNearA < 6) || matureNearA == 8) map[i, j] = 3;
+                        else map[i, j] = 2;
                     }
-                    else map[i, j] = 2; // default stability
+                    else map[i, j] = 2;
                 }
                 else if (map[i, j] == 1) // Weak
                 {
-                    if (score < 6)
-                    {
-                        map[i, j] = 0; // isolated → Dead
-                    }
-                    else if (score >= 14 && score <= 21 || matureNear>=6 || thrivingNear>=7 || matureFar>=7 || thrivingFar>=8)
-                    {
-                        map[i, j] = 2; // enough support → Mature (even if overcrowded)
-                    }
-
+                    if (scoreA < 6)
+                        map[i, j] = 0;
+                    else if (scoreA >= 14 && scoreA <= 21 || matureNearA >= 6 || thrivingNearA >= 7 || matureFarA >= 7 || thrivingFarA >= 8)
+                        map[i, j] = 2;
                     else
+                        map[i, j] = 1;
+                }
+
+                // === Team B evolution ===
+                else if (map[i, j] == 6) // Thriving
+                {
+                    if (scoreB < 10 || scoreB > 24) map[i, j] = 5;
+                    else map[i, j] = 6;
+                }
+                else if (map[i, j] == 5) // Mature
+                {
+                    if (scoreB < 8 || scoreB > 26) map[i, j] = 4;
+                    else if (scoreB >= 18 && scoreB <= 23)
                     {
-                        map[i, j] = 1; // otherwise remain Weak
+                        if ((thrivingNearB < 5 && matureNearB < 6) || matureNearB == 8) map[i, j] = 6;
+                        else map[i, j] = 5;
                     }
+                    else map[i, j] = 5;
+                }
+                else if (map[i, j] == 4) // Weak
+                {
+                    if (scoreB < 6)
+                        map[i, j] = 0;
+                    else if (scoreB >= 14 && scoreB <= 21 || matureNearB >= 6 || thrivingNearB >= 7 || matureFarB >= 7 || thrivingFarB >= 8)
+                        map[i, j] = 5;
+                    else
+                        map[i, j] = 4;
                 }
                 else if (map[i, j] == 0) // Dead
                 {
-                    if (score >= 8 && score <= 22 && thrivingNear < 4)
-                        map[i, j] = 1;  // only grow near edges
-                    else if (score > 22)
+                    if ((scoreA >= 8 && scoreA <= 22 && thrivingNearA < 4) || (scoreB >= 8 && scoreB <= 22 && thrivingNearB < 4))
                     {
-                        map[i, j] = 1; // overcrowded but not dead → remains Weak
+                        int decider = rand.Next(2);
+                        if (scoreA > scoreB) map[i, j] = 1;
+                        else if (scoreA < scoreB) map[i, j] = 4;
+                        else map[i, j] = (decider == 0) ? 1 : 4;
                     }
-                    else
-                        map[i, j] = 0;
+                    else if (scoreA > 22)
+                        map[i, j] = 1;
+                    else if (scoreB > 22)
+                        map[i, j] = 4;
+                    else map[i, j] = 0;
                 }
 
-
+                // === Combat Phase (after evolution) ===
+                if (map[i, j] >= 1 && map[i, j] <= 3) // Team A
+                {
+                    double survivalChance = Math.Max(0, 1.0 - enemyPressureA * 0.15);
+                    if (rand.NextDouble() > survivalChance)
+                    {
+                        if (map[i, j] == 3) map[i, j] = 2; // Thriving → Mature
+                        else if (map[i, j] == 2) map[i, j] = 1; // Mature → Weak
+                        else if (map[i, j] == 1) map[i, j] = 4; // Weak A → Weak B
+                    }
+                }
+                else if (map[i, j] >= 4 && map[i, j] <= 6) // Team B
+                {
+                    double survivalChance = Math.Max(0, 1.0 - enemyPressureB * 0.15);
+                    if (rand.NextDouble() > survivalChance)
+                    {
+                        if (map[i, j] == 6) map[i, j] = 5; // Thriving → Mature
+                        else if (map[i, j] == 5) map[i, j] = 4; // Mature → Weak
+                        else if (map[i, j] == 4) map[i, j] = 1; // Weak B → Weak A
+                    }
+                }
             }
         }
     }
+
 
 
 
