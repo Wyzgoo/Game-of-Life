@@ -3,8 +3,8 @@
 internal class Program
 {
     // --- Environment variables ---
-    public const int l = 300;
-    public const int L = 150;
+    public const int l = 150;
+    public const int L = 75;
     public static int numberStartCells = l * L / 2; // number of starting cells, depending on the side of the grid
     public static int SleepTime = 50; // time (in ms) between each generation
     public static int[,] map = new int[L, l];
@@ -233,25 +233,37 @@ internal class Program
                     else map[i, j] = 0;
                 }
 
-                // === Combat Phase (after evolution) ===
+                double boost = rand.Next(1, 101);
+                double resistanceA = 0.15;
+                double resistanceB = 0.15;
+                if (boost < 10)
+                    resistanceA = 0.10;
+                else if(boost >=10 && boost<20)
+                    resistanceA = 0.20;
+                else if (boost > 90)
+                    resistanceB = 0.10;
+                else if (boost >= 80 && boost < 90)
+                    resistanceB = 0.20;
+
+                // === Combat Phase ===
                 if (map[i, j] >= 1 && map[i, j] <= 3) // Team A
                 {
-                    double survivalChance = Math.Max(0, 1.0 - enemyPressureA * 0.15);
+                    double survivalChance = Math.Max(0, 1.0 - enemyPressureA * resistanceA);
                     if (rand.NextDouble() > survivalChance)
                     {
-                        if (map[i, j] == 3) map[i, j] = 2; // Thriving → Mature
-                        else if (map[i, j] == 2) map[i, j] = 1; // Mature → Weak
-                        else if (map[i, j] == 1) map[i, j] = 4; // Weak A → Weak B
+                        if (map[i, j] == 3) map[i, j] = 2; // Thriving -> Mature
+                        else if (map[i, j] == 2) map[i, j] = 1; // Mature -> Weak
+                        else if (map[i, j] == 1) map[i, j] = 4; // Weak A -> Weak B
                     }
                 }
                 else if (map[i, j] >= 4 && map[i, j] <= 6) // Team B
                 {
-                    double survivalChance = Math.Max(0, 1.0 - enemyPressureB * 0.15);
+                    double survivalChance = Math.Max(0, 1.0 - enemyPressureB * resistanceB);
                     if (rand.NextDouble() > survivalChance)
                     {
-                        if (map[i, j] == 6) map[i, j] = 5; // Thriving → Mature
-                        else if (map[i, j] == 5) map[i, j] = 4; // Mature → Weak
-                        else if (map[i, j] == 4) map[i, j] = 1; // Weak B → Weak A
+                        if (map[i, j] == 6) map[i, j] = 5; // Thriving -> Mature
+                        else if (map[i, j] == 5) map[i, j] = 4; // Mature -> Weak
+                        else if (map[i, j] == 4) map[i, j] = 1; // Weak B -> Weak A
                     }
                 }
             }
